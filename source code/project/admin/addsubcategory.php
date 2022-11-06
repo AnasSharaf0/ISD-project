@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title> Admin Home</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<?php include('function.php'); ?>
+
+<div style="padding-top:100px; box-shadow:1px 1px 20px black; min-height:570px" class="container">
+<div class="col-sm-3" style="border-right:1px solid #999; min-height:450px;">
+<?php include('left.php'); ?>
+</div>
+<div class="col-sm-9">
+
+
+
+
+<form method="post" enctype="multipart/form-data">
+<table border="0" width="400px" height="300px" align="center" class="tableshadow">
+<tr><td colspan="2" class="toptd">Add Subcategory</td></tr>
+<tr><td class="lefttxt">Subcategory Name</td><td><input type="text" name="t1" required pattern="[a-zA-z _]{2,50}" title"Please Enter Only Characters between 2 to 50 for Subcategory name"/></td></tr>
+<tr><td class="lefttxt">Select Category</td><td><select name="t2" required/><option value="">Select</option>
+
+<?php
+$cn=makeconnection();
+$s="select * from category";
+$result=mysqli_query($cn,$s);
+$r=mysqli_num_rows($result);
+
+
+while($data=mysqli_fetch_array($result))
+{
+	
+		echo "<option value=$data[0]>$data[1]</option>";
+	
+}
+
+
+
+
+?>
+
+</select>
+<tr><td class="lefttxt">Upload Pic</td><td><input type="file" name="t3" /></td></tr>
+<tr><td class="lefttxt">Details</td><td><textarea name="t4"/></textarea></td></tr>
+<tr><td>&nbsp;</td><td ><input type="submit" value="SAVE" name="sbmt" /></td></tr>
+
+
+
+
+</table>
+</form>
+
+
+
+</div>
+</div>
+<?php include('footer.php'); ?>
+<?php
+if(isset($_POST["sbmt"]))
+{
+	$cn=makeconnection();
+	
+	$target_dir = "subcatimages/";
+	$target_file = $target_dir.basename($_FILES["t3"]["name"]);
+	$uploadok = 1;
+	$imagefiletype = pathinfo($target_file, PATHINFO_EXTENSION);
+	
+	$check=getimagesize($_FILES["t3"]["tmp_name"]);
+	if($check!==false) {
+		echo "file is an image - ". $check["mime"]. ".";
+		$uploadok = 1;
+	}else{
+		echo "file is not an image.";
+		$uploadok=0;
+	}
+	
+	
+	
+	if(file_exists($target_file)){
+		echo "sorry,file already exists.";
+		$uploadok=0;
+	}
+	
+	
+	if($_FILES["t3"]["size"]>500000){
+		echo "sorry, your file is too large.";
+		$uploadok=0;
+	}
+	
+	
+	if($imagefiletype != "jpg" && $imagefiletype !="png" && $imagefiletype !="jpeg" && $imagefileype !="gif"){
+		echo "sorry, only jpg, jpeg, Png & gif files are allowed.";
+		$uploadok=0;
+	}else{
+		if(move_uploaded_file($_FILES["t3"]["tmp_name"], $target_file)){
+			
+	
+	
+	$s="insert into subcategory(Subcatname,Catid,pic,detail) values('" . $_POST["t1"] ."','" . $_POST["t2"] . "','" . basename($_FILES["t3"]["name"]) . "','" . $_POST["t4"] ."')";
+	mysqli_query($cn,$s);
+	
+	echo "<script>alert('Record Save');</script>";
+	
+	
+		} else{
+			echo "sorry there was an error uploading your file.";
+		}}
+}
+?>
+
+
+
+</body>
+</html>
